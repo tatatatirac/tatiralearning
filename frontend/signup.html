@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+
+<title>Signup — TatiraLearning</title>
+
+<style>
+
+body{
+background:#0a0f1c;
+color:white;
+font-family:Inter,sans-serif;
+display:flex;
+justify-content:center;
+align-items:center;
+height:100vh;
+}
+
+.container{
+background:#121a2b;
+padding:40px;
+border-radius:12px;
+width:320px;
+}
+
+h2{
+margin-bottom:10px;
+}
+
+input{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+outline:none;
+}
+
+input:focus{
+box-shadow:0 0 0 2px #00e5ff;
+}
+
+button{
+width:100%;
+padding:12px;
+background:#00e5ff;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-weight:bold;
+margin-top:10px;
+}
+
+button:hover{
+background:#00c8e0;
+}
+
+a{
+color:#00e5ff;
+text-decoration:none;
+}
+
+.success{
+color:#00ffae;
+margin-top:10px;
+}
+
+.error{
+color:#ff4d4d;
+margin-top:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<h2>Create Account</h2>
+
+<form id="signup-form">
+
+<input 
+id="username"
+placeholder="Username"
+required
+>
+
+<input 
+id="email"
+type="email"
+placeholder="Email"
+required
+>
+
+<input 
+id="password"
+type="password"
+placeholder="Password"
+required
+>
+
+<button type="submit">
+Create Account
+</button>
+
+<div id="message"></div>
+
+</form>
+
+<p style="margin-top:15px;">
+Already have account?
+<a href="login.html">Login</a>
+</p>
+
+</div>
+
+<script>
+
+const form = document.getElementById("signup-form");
+
+form.addEventListener("submit", signup);
+
+async function signup(event){
+
+event.preventDefault();
+
+const username = document.getElementById("username").value.trim();
+const email = document.getElementById("email").value.trim();
+const password = document.getElementById("password").value.trim();
+
+const message = document.getElementById("message");
+
+message.innerHTML="";
+message.className="";
+
+if(!username || !email || !password){
+
+message.innerHTML="Please fill all fields.";
+message.className="error";
+return;
+
+}
+
+try{
+
+const response = await fetch(
+"http://127.0.0.1:8000/api/users/register/",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+username,
+email,
+password
+})
+}
+);
+
+const data = await response.json();
+
+if(response.ok){
+
+message.innerHTML="Account created successfully.";
+message.className="success";
+
+setTimeout(()=>{
+window.location.href="login.html";
+},1500);
+
+}else{
+
+if(data.username){
+
+message.innerHTML=data.username[0];
+
+}
+else if(data.email){
+
+message.innerHTML=data.email[0];
+
+}
+else if(data.password){
+
+message.innerHTML=data.password[0];
+
+}
+else{
+
+message.innerHTML="Signup failed.";
+
+}
+
+message.className="error";
+
+}
+
+}catch(error){
+
+message.innerHTML="Cannot connect to server.";
+message.className="error";
+
+}
+
+}
+
+</script>
+
+</body>
+
+</html>

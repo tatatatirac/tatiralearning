@@ -5,6 +5,8 @@ from .models import Course, Lesson, Enrollment
 from .serializers import CourseSerializer, LessonSerializer, EnrollmentSerializer
 from rest_framework.exceptions import PermissionDenied
 from .models import Course, Lesson, Enrollment
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.exceptions import PermissionDenied
 
 
 class CourseListView(generics.ListAPIView):
@@ -16,13 +18,14 @@ class CourseListView(generics.ListAPIView):
 
 class CourseCreateView(generics.CreateAPIView):
 
-    queryset = Course.objects.all()
-
     serializer_class = CourseSerializer
 
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
+
+        if not self.request.user.is_staff and not self.request.user.is_superuser:
+            raise PermissionDenied("Only admin can create courses.")
 
         serializer.save(instructor=self.request.user)
 

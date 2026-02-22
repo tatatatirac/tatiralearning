@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+
+<title>Dashboard — TatiraLearning</title>
+
+<style>
+
+body{
+background:#0a0f1c;
+color:white;
+font-family:Inter,sans-serif;
+margin:0;
+}
+
+.navbar{
+display:flex;
+justify-content:space-between;
+align-items:center;
+padding:20px 40px;
+background:#121a2b;
+}
+
+.logo{
+font-size:22px;
+font-weight:bold;
+color:#00e5ff;
+}
+
+.logout{
+cursor:pointer;
+color:#ff4d4d;
+}
+
+.container{
+padding:40px;
+max-width:900px;
+margin:auto;
+}
+
+h1{
+margin-bottom:20px;
+}
+
+.card{
+background:#121a2b;
+padding:20px;
+border-radius:12px;
+margin-bottom:20px;
+}
+
+input, textarea{
+width:100%;
+padding:12px;
+margin:10px 0;
+border:none;
+border-radius:8px;
+}
+
+button{
+padding:12px 20px;
+background:#00e5ff;
+border:none;
+border-radius:8px;
+cursor:pointer;
+font-weight:bold;
+}
+
+button:hover{
+background:#00c8e0;
+}
+
+.course{
+background:#16233f;
+padding:15px;
+border-radius:8px;
+margin-top:10px;
+}
+
+.success{
+color:#00ffae;
+margin-top:10px;
+}
+
+.error{
+color:#ff4d4d;
+margin-top:10px;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="navbar">
+
+<div class="logo">
+Dashboard
+</div>
+
+<div>
+
+<span id="username-display"></span>
+
+<span class="logout" onclick="logout()">
+Logout
+</span>
+
+</div>
+
+</div>
+
+<div class="container">
+
+<h1>Your Courses</h1>
+
+<div id="courses-container"></div>
+
+<div class="card">
+
+<h2>Create New Course</h2>
+
+<form id="course-form">
+
+<input
+id="title"
+placeholder="Course Title"
+required
+>
+
+<textarea
+id="description"
+placeholder="Course Description"
+required
+></textarea>
+
+<input
+id="price"
+type="number"
+placeholder="Price"
+required
+>
+
+<button type="submit">
+Create Course
+</button>
+
+<div id="message"></div>
+
+</form>
+
+</div>
+
+</div>
+
+<script>
+
+const isStaff = localStorage.getItem("is_staff") === "true";
+const isSuperuser = localStorage.getItem("is_superuser") === "true";
+
+if(!isStaff && !isSuperuser){
+
+alert("Access denied");
+
+window.location.href="index.html";
+
+}
+
+// auth check
+
+const token = localStorage.getItem("access");
+const username = localStorage.getItem("username");
+
+if(!token){
+
+window.location.href="login.html";
+
+}
+
+// show username
+
+document.getElementById("username-display").innerHTML =
+"Welcome, " + username + " | ";
+
+// logout
+
+function logout(){
+
+localStorage.removeItem("access");
+localStorage.removeItem("username");
+
+window.location.href="index.html";
+
+}
+
+// load courses
+
+async function loadCourses(){
+
+const response = await fetch(
+"http://127.0.0.1:8000/api/courses/",
+{
+headers:{
+"Authorization":"Bearer " + token
+}
+}
+);
+
+const courses = await response.json();
+
+const container =
+document.getElementById("courses-container");
+
+container.innerHTML="";
+
+courses.forEach(course=>{
+
+container.innerHTML += `
+<div class="course">
+
+<strong>${course.title}</strong>
+
+<br>
+
+${course.description}
+
+<br>
+
+Price: €${course.price}
+
+</div>
+`;
+
+});
+
+}
+
+// create course
+
+document
+.getElementById("course-form")
+.addEventListener("submit", createCourse);
+
+async function createCourse(event){
+
+event.preventDefault();
+
+const title =
+document.getElementById("title").value;
+
+const description =
+document.getElementById("description").value;
+
+const price =
+document.getElementById("price").value;
+
+const message =
+document.getElementById("message");
+
+message.innerHTML="";
+message.className="";
+
+try{
+
+const response = await fetch(
+"http://127.0.0.1:8000/api/courses/create/",
+{
+method:"POST",
+headers:{
+"Content-Type":"application/json",
+"Authorization":"Bearer " + token
+},
+body:JSON.stringify({
+title,
+description,
+price
+})
+}
+);
+
+if(response.ok){
+
+message.innerHTML =
+"Course created successfully.";
+
+message.className="success";
+
+loadCourses();
+
+}else{
+
+message.innerHTML =
+"Failed to create course.";
+
+message.className="error";
+
+}
+
+}catch{
+
+message.innerHTML =
+"Server error.";
+
+message.className="error";
+
+}
+
+}
+
+// init
+
+loadCourses();
+
+</script>
+
+</body>
+
+</html>
