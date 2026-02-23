@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html>
+<head>
+
+<meta charset="UTF-8">
+
+<title>Course Management</title>
+
+<style>
+
+body{
+background:#0f172a;
+color:white;
+font-family:Inter;
+}
+
+.container{
+padding:40px;
+max-width:800px;
+margin:auto;
+}
+
+.card{
+background:#020617;
+padding:20px;
+margin-bottom:20px;
+border-radius:10px;
+}
+
+input, textarea{
+
+width:100%;
+padding:10px;
+margin-top:10px;
+
+}
+
+button{
+
+margin-top:10px;
+padding:10px;
+background:#00e5ff;
+border:none;
+cursor:pointer;
+
+}
+
+.course{
+
+background:#16233f;
+padding:15px;
+margin-top:10px;
+
+}
+
+.delete{
+
+background:red;
+
+}
+
+</style>
+
+</head>
+
+<body>
+
+<div class="container">
+
+<div class="card">
+
+<h2>Create Course</h2>
+
+<form id="courseForm">
+
+<input id="title" placeholder="Title">
+
+<textarea id="description"
+placeholder="Description"></textarea>
+
+<input id="price" type="number"
+placeholder="Price">
+
+<button>Create</button>
+
+</form>
+
+</div>
+
+<div class="card">
+
+<h2>Courses</h2>
+
+<div id="courses"></div>
+
+</div>
+
+</div>
+
+<script>
+
+const token =
+localStorage.getItem("access");
+
+
+//////////////////////////////////////////////////
+// CREATE COURSE
+//////////////////////////////////////////////////
+
+document
+.getElementById("courseForm")
+.addEventListener("submit",
+async e=>{
+
+e.preventDefault();
+
+await fetch(
+"http://127.0.0.1:8000/api/courses/create/",
+{
+method:"POST",
+headers:{
+Authorization:"Bearer "+token,
+"Content-Type":"application/json"
+},
+body:JSON.stringify({
+
+title:title.value,
+description:description.value,
+price:price.value
+
+})
+}
+);
+
+loadCourses();
+
+});
+
+
+//////////////////////////////////////////////////
+// LOAD COURSES
+//////////////////////////////////////////////////
+
+async function loadCourses(){
+
+const res =
+await fetch(
+"http://127.0.0.1:8000/api/courses/"
+);
+
+const data =
+await res.json();
+
+courses.innerHTML="";
+
+data.forEach(c=>{
+
+courses.innerHTML+=`
+
+<div class="course">
+
+${c.title}
+
+<button onclick="
+deleteCourse(${c.id})
+" class="delete">
+
+Delete
+
+</button>
+
+</div>
+
+`;
+
+});
+
+}
+
+
+//////////////////////////////////////////////////
+// DELETE
+//////////////////////////////////////////////////
+
+async function deleteCourse(id){
+
+await fetch(
+"http://127.0.0.1:8000/api/courses/delete/"+id+"/",
+{
+method:"DELETE",
+headers:{
+Authorization:"Bearer "+token
+}
+}
+);
+
+loadCourses();
+
+}
+
+loadCourses();
+
+</script>
+
+</body>
+</html>

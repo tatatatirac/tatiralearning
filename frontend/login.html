@@ -1,199 +1,157 @@
 <!DOCTYPE html>
 <html>
 <head>
-
-<meta charset="UTF-8">
-
-<title>Login — TatiraLearning</title>
+    <meta charset="UTF-8">
+    <title>Login — TatiraLearning</title>
 
 <style>
 
-body{
-background:#0a0f1c;
-color:white;
-font-family:Inter,sans-serif;
-display:flex;
-justify-content:center;
-align-items:center;
-height:100vh;
-}
+    body{
+    background:#0a0f1c;
+    color:white;
+    font-family:Inter;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    height:100vh;
+    }
 
-.container{
-background:#121a2b;
-padding:40px;
-border-radius:12px;
-width:320px;
-}
+    .container{
+    background:#121a2b;
+    padding:40px;
+    border-radius:12px;
+    width:320px;
+    }
 
-h2{
-margin-bottom:10px;
-}
+    input{
+    width:100%;
+    padding:12px;
+    margin:10px 0;
+    border:none;
+    border-radius:8px;
+    }
 
-input{
-width:100%;
-padding:12px;
-margin:10px 0;
-border:none;
-border-radius:8px;
-outline:none;
-}
+    button{
+    width:100%;
+    padding:12px;
+    background:#00e5ff;
+    border:none;
+    border-radius:8px;
+    cursor:pointer;
+    }
 
-input:focus{
-box-shadow:0 0 0 2px #00e5ff;
-}
+    .error{color:#ff4d4d;}
+    .success{color:#00ffae;}
 
-button{
-width:100%;
-padding:12px;
-background:#00e5ff;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-weight:bold;
-margin-top:10px;
-}
+    </style>
+    </head>
 
-button:hover{
-background:#00c8e0;
-}
+    <body>
 
-a{
-color:#00e5ff;
-text-decoration:none;
-}
+    <div class="container">
 
-.success{
-color:#00ffae;
-margin-top:10px;
-}
+    <h2>Login</h2>
 
-.error{
-color:#ff4d4d;
-margin-top:10px;
-}
+    <form id="login-form">
 
-</style>
+    <input id="username" placeholder="Username" required>
 
-</head>
+    <input id="password" type="password" placeholder="Password" required>
 
-<body>
+    <button type="submit">Login</button>
 
-<div class="container">
+    <div id="message"></div>
 
-<h2>Login</h2>
+    </form>
 
-<form id="login-form">
+    </div>
 
-<input
-id="username"
-placeholder="Username"
-required
->
+    <script>
 
-<input
-id="password"
-type="password"
-placeholder="Password"
-required
->
+    const form = document.getElementById("login-form");
 
-<button type="submit">
-Login
-</button>
+    form.addEventListener("submit", login);
 
-<div id="message"></div>
+    async function login(e){
 
-</form>
+    e.preventDefault();
 
-<p style="margin-top:15px;">
-No account?
-<a href="signup.html">Signup</a>
-</p>
+    const username =
+    document.getElementById("username").value;
 
-</div>
+    const password =
+    document.getElementById("password").value;
 
-<script>
+    const message =
+    document.getElementById("message");
 
-const form = document.getElementById("login-form");
+    const response =
+    await fetch("http://127.0.0.1:8000/api/login/", {
 
-form.addEventListener("submit", login);
+    method:"POST",
 
-async function login(event){
+    headers:{
+    "Content-Type":"application/json"
+    },
 
-event.preventDefault();
+    body:JSON.stringify({
+    username,
+    password
+    })
 
-const username = document.getElementById("username").value.trim();
-const password = document.getElementById("password").value.trim();
+    });
 
-const message = document.getElementById("message");
+    const data = await response.json();
 
-message.innerHTML="";
-message.className="";
+    if(response.ok){
 
-if(!username || !password){
+    localStorage.setItem("access", data.access);
 
-message.innerHTML="Please enter username and password.";
-message.className="error";
-return;
+    localStorage.setItem("username", username);
 
-}
+    //////////////////////////////////////////////////
+    // LOAD USER INFO
+    //////////////////////////////////////////////////
 
-try{
+    const userResponse =
+    await fetch("http://127.0.0.1:8000/api/users/", {
 
-const response = await fetch(
-"http://127.0.0.1:8000/api/login/",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json"
-},
-body:JSON.stringify({
-username,
-password
-})
-}
-);
+    headers:{
+    Authorization:
+    "Bearer " + data.access
+    }
 
-const data = await response.json();
+    });
 
-if(response.ok){
+    if(userResponse.ok){
 
-// save token
-localStorage.setItem("access", data.access);
-localStorage.setItem("username", username);
+    localStorage.setItem("is_staff", "true");
 
-// decode JWT
-const payload = JSON.parse(atob(data.access.split('.')[1]));
+    localStorage.setItem("is_superuser", "true");
 
-localStorage.setItem("is_staff", payload.is_staff || false);
-localStorage.setItem("is_superuser", payload.is_superuser || false);
+    }
 
-message.innerHTML="Login successful.";
-message.className="success";
+    message.innerHTML="Login successful";
 
-// redirect
-setTimeout(()=>{
-window.location.href="index.html";
-},1000);
+    message.className="success";
 
-}else{
+    setTimeout(()=>{
 
-message.innerHTML="Invalid username or password.";
-message.className="error";
+    window.location.href="index.html";
 
-}
+    },1000);
 
-}catch(error){
+    }else{
 
-message.innerHTML="Cannot connect to server.";
-message.className="error";
+    message.innerHTML="Invalid login";
 
-}
+    message.className="error";
 
-}
+    }
 
-</script>
+    }
 
-</body>
+    </script>
 
+    </body>
 </html>

@@ -3,319 +3,235 @@
 <head>
 
 <meta charset="UTF-8">
-
-<title>Dashboard — TatiraLearning</title>
+<title> Dashboard — TatiraLearning</title>
 
 <style>
 
 body{
 background:#0a0f1c;
 color:white;
-font-family:Inter,sans-serif;
+font-family:Inter;
 margin:0;
 }
 
 .navbar{
-display:flex;
-justify-content:space-between;
-align-items:center;
-padding:20px 40px;
-background:#121a2b;
-}
-
-.logo{
-font-size:22px;
-font-weight:bold;
-color:#00e5ff;
-}
-
-.logout{
-cursor:pointer;
-color:#ff4d4d;
+    background:#121a2b;
+    padding:20px 40px;
+    display:flex;
+    justify-content:space-between;
 }
 
 .container{
-padding:40px;
-max-width:900px;
-margin:auto;
-}
-
-h1{
-margin-bottom:20px;
-}
-
+    padding:40px;
+    max-width:1000px;
+    margin:auto;
+    }
 .card{
-background:#121a2b;
-padding:20px;
-border-radius:12px;
-margin-bottom:20px;
+    background:#121a2b;
+    padding:20px;
+    margin-bottom:20px;
+    border-radius:10px;
 }
 
 input, textarea{
 width:100%;
 padding:12px;
-margin:10px 0;
+margin-top:10px;
 border:none;
-border-radius:8px;
+border-radius:6px;
 }
 
 button{
-padding:12px 20px;
-background:#00e5ff;
-border:none;
-border-radius:8px;
-cursor:pointer;
-font-weight:bold;
-}
-
-button:hover{
-background:#00c8e0;
+    margin-top:10px;
+    padding:12px;
+    background:#00e5ff;
+    border:none;
+    border-radius:6px;
+    cursor:pointer;
 }
 
 .course{
-background:#16233f;
-padding:15px;
-border-radius:8px;
-margin-top:10px;
+    background:#16233f;
+    padding:15px;
+    margin-top:10px;
+    border-radius:6px;
 }
 
-.success{
-color:#00ffae;
-margin-top:10px;
-}
-
-.error{
-color:#ff4d4d;
-margin-top:10px;
-}
+.success{color:#00ffae;}
+.error{color:#ff4d4d;}
 
 </style>
 
 </head>
 
-<body>
+    <body>
 
-<div class="navbar">
+    <div class="navbar">
 
-<div class="logo">
-Dashboard
-</div>
+    <div>
+    Instructor Dashboard
+    </div>
 
-<div>
+    <div>
 
-<span id="username-display"></span>
+    <span id="username"></span>
 
-<span class="logout" onclick="logout()">
-Logout
-</span>
+    <span onclick="logout()" style="cursor:pointer;color:red;">
+    Logout
+    </span>
 
-</div>
+    </div>
 
-</div>
+    </div>
 
-<div class="container">
+    <div class="container">
 
-<h1>Your Courses</h1>
+    <div class="card">
 
-<div id="courses-container"></div>
+    <h2>Create Course</h2>
 
-<div class="card">
+    <form id="courseForm">
 
-<h2>Create New Course</h2>
+    <input id="title" placeholder="Title" required>
 
-<form id="course-form">
+    <textarea id="description" placeholder="Description"></textarea>
 
-<input
-id="title"
-placeholder="Course Title"
-required
->
+    <input id="price" type="number" placeholder="Price">
 
-<textarea
-id="description"
-placeholder="Course Description"
-required
-></textarea>
+    <button type="submit">Create</button>
 
-<input
-id="price"
-type="number"
-placeholder="Price"
-required
->
+    <div id="message"></div>
 
-<button type="submit">
-Create Course
-</button>
+    </form>
 
-<div id="message"></div>
+    </div>
 
-</form>
+    <div class="card">
 
-</div>
+    <h2>Your Courses</h2>
 
-</div>
+    <div id="courses"></div>
 
-<script>
+    </div>
 
-const isStaff = localStorage.getItem("is_staff") === "true";
-const isSuperuser = localStorage.getItem("is_superuser") === "true";
+    </div>
 
-if(!isStaff && !isSuperuser){
+    <script>
 
-alert("Access denied");
+    const token = localStorage.getItem("access");
 
-window.location.href="index.html";
+    if(!token){
+    window.location.href="login.html";
+    }
 
-}
+    document.getElementById("username").innerHTML =
+    localStorage.getItem("username");
 
-// auth check
+    function logout(){
 
-const token = localStorage.getItem("access");
-const username = localStorage.getItem("username");
+    localStorage.clear();
 
-if(!token){
+    window.location.href="index.html";
 
-window.location.href="login.html";
+    }
 
-}
+    //////////////////////////////////////////////////
+    // LOAD COURSES
+    //////////////////////////////////////////////////
 
-// show username
+    async function loadCourses(){
 
-document.getElementById("username-display").innerHTML =
-"Welcome, " + username + " | ";
+    const res =
+    await fetch("http://127.0.0.1:8000/api/courses/",{
+    headers:{
+    Authorization:"Bearer "+token
+    }
+    });
 
-// logout
+    const data = await res.json();
 
-function logout(){
+    const container =
+    document.getElementById("courses");
 
-localStorage.removeItem("access");
-localStorage.removeItem("username");
+    container.innerHTML="";
 
-window.location.href="index.html";
+    data.forEach(c=>{
 
-}
+    container.innerHTML+=`
+    <div class="course">
 
-// load courses
+    ${c.title}
 
-async function loadCourses(){
+    <br>
 
-const response = await fetch(
-"http://127.0.0.1:8000/api/courses/",
-{
-headers:{
-"Authorization":"Bearer " + token
-}
-}
-);
+    €${c.price}
 
-const courses = await response.json();
+    </div>
+    `;
 
-const container =
-document.getElementById("courses-container");
+    });
 
-container.innerHTML="";
+    }
 
-courses.forEach(course=>{
+    //////////////////////////////////////////////////
+    // CREATE COURSE
+    //////////////////////////////////////////////////
 
-container.innerHTML += `
-<div class="course">
+    document
+    .getElementById("courseForm")
+    .addEventListener("submit", async e=>{
 
-<strong>${course.title}</strong>
+    e.preventDefault();
 
-<br>
+    const title =
+    document.getElementById("title").value;
 
-${course.description}
+    const description =
+    document.getElementById("description").value;
 
-<br>
+    const price =
+    document.getElementById("price").value;
 
-Price: €${course.price}
+    const res =
+    await fetch("http://127.0.0.1:8000/api/courses/create/",{
 
-</div>
-`;
+    method:"POST",
 
-});
+    headers:{
+    Authorization:"Bearer "+token,
+    "Content-Type":"application/json"
+    },
 
-}
+    body:JSON.stringify({
+    title,
+    description,
+    price
+    })
 
-// create course
+    });
 
-document
-.getElementById("course-form")
-.addEventListener("submit", createCourse);
+    const msg =
+    document.getElementById("message");
 
-async function createCourse(event){
+    if(res.ok){
 
-event.preventDefault();
+    msg.innerHTML="Created";
+    msg.className="success";
 
-const title =
-document.getElementById("title").value;
+    loadCourses();
 
-const description =
-document.getElementById("description").value;
+    }else{
 
-const price =
-document.getElementById("price").value;
+    msg.innerHTML="Error";
+    msg.className="error";
 
-const message =
-document.getElementById("message");
+    }
 
-message.innerHTML="";
-message.className="";
+    });
 
-try{
+    loadCourses();
 
-const response = await fetch(
-"http://127.0.0.1:8000/api/courses/create/",
-{
-method:"POST",
-headers:{
-"Content-Type":"application/json",
-"Authorization":"Bearer " + token
-},
-body:JSON.stringify({
-title,
-description,
-price
-})
-}
-);
+    </script>
 
-if(response.ok){
-
-message.innerHTML =
-"Course created successfully.";
-
-message.className="success";
-
-loadCourses();
-
-}else{
-
-message.innerHTML =
-"Failed to create course.";
-
-message.className="error";
-
-}
-
-}catch{
-
-message.innerHTML =
-"Server error.";
-
-message.className="error";
-
-}
-
-}
-
-// init
-
-loadCourses();
-
-</script>
-
-</body>
-
+    </body>
 </html>

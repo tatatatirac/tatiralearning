@@ -313,17 +313,11 @@ loadCourses();
 
 function updateNavbar(){
 
-const username =
-localStorage.getItem("username");
+const username = localStorage.getItem("username");
+const isStaff = localStorage.getItem("is_staff") === "true";
+const isSuperuser = localStorage.getItem("is_superuser") === "true";
 
-const isStaff =
-localStorage.getItem("is_staff") === "true";
-
-const isSuperuser =
-localStorage.getItem("is_superuser") === "true";
-
-const nav =
-document.getElementById("auth-container");
+const nav = document.getElementById("auth-container");
 
 if(username){
 
@@ -335,24 +329,20 @@ let html = `
 if(isStaff || isSuperuser){
 
 html += `
-<a href="dashboard.html">
-Dashboard
-</a>
+<a href="dashboard.html">Dashboard</a>
+<a href="admin.html">Admin</a>
 `;
 
 }
 
 html += `
-<span>Welcome, ${username}</span>
-<a href="#" onclick="logout()">
-Logout
-</a>
+<span>Welcome ${username}</span>
+<a href="#" onclick="logout()">Logout</a>
 `;
 
 nav.innerHTML = html;
 
-}
-else{
+}else{
 
 nav.innerHTML = `
 <a href="#">Courses</a>

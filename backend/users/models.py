@@ -1,5 +1,3 @@
-from django.db import models
-
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
@@ -8,14 +6,19 @@ class User(AbstractUser):
 
     email = models.EmailField(unique=True)
 
-    is_student = models.BooleanField(default=True)
-    is_instructor = models.BooleanField(default=False)
+    groups = models.ManyToManyField(
+        "auth.Group",
+        related_name="custom_users",
+        blank=True,
+    )
 
-    profile_image = models.ImageField(
-        upload_to='profile_images/',
-        null=True,
-        blank=True
+    user_permissions = models.ManyToManyField(
+        "auth.Permission",
+        related_name="custom_users_permissions",
+        blank=True,
     )
 
     def __str__(self):
         return self.username
+    
+    
