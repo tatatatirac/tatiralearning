@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Upload Course ZIP</title>
+</head>
+<body>
+
+<h2>Upload Course ZIP</h2>
+
+<input type="file" id="zipfile">
+<button onclick="uploadZip()">Upload</button>
+
+<p id="message"></p>
+
+<script>
+async function uploadZip() {
+    const fileInput = document.getElementById("zipfile");
+    const file = fileInput.files[0];
+    const token = localStorage.getItem("access");
+    const form = new FormData();
+    form.append("file", file);
+
+    const response = await fetch("http://127.0.0.1:8000/api/courses/upload-zip/", {
+        method: "POST",
+        headers: {
+            "Authorization": "Bearer " + token
+        },
+        body: form
+    });
+
+    const data = await response.json();
+
+    document.getElementById("message").innerText = data.message || JSON.stringify(data);
+}
+</script>
+
+</body>
+</html>
