@@ -1,16 +1,28 @@
 from django.urls import path
-from .views import CourseListView, CourseCreateView, LessonListView, EnrollView
 
+from .views import (
+    CourseListView,
+    CourseCreateView,
+    LessonListView,
+    EnrollView,
+    UploadCourseZipView,
+)
 
 urlpatterns = [
 
-    path('', CourseListView.as_view()),
+    # lista svih kurseva
+    path("", CourseListView.as_view()),
 
-    path('create/', CourseCreateView.as_view()),
+    # kreiranje kursa (admin only)
+    path("create/", CourseCreateView.as_view()),
 
-    path('<int:course_id>/lessons/', LessonListView.as_view()),
+    # lekcije za kurs (student ili instructor)
+    path("lessons/<int:course_id>/", LessonListView.as_view()),
 
-    path('enroll/', EnrollView.as_view()),
+    # enroll kurs (student)
+    path("enroll/", EnrollView.as_view()),
+
+    # upload kompletan kurs ZIP (admin)
+    path("upload-zip/", UploadCourseZipView.as_view()),
+
 ]
-
-from .views import EnrollView

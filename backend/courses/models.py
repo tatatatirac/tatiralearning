@@ -74,3 +74,9 @@ class Enrollment(models.Model):
 
     def __str__(self):
         return f"{self.student} enrolled in {self.course}"
+class ExternalCourseUpload(models.Model):
+    file = models.FileField(upload_to="course_zips/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"ExternalUpload {self.id}"

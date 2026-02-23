@@ -19,3 +19,4 @@ class UserListView(generics.ListAPIView):
     serializer_class = UserSerializer
 
     permission_classes = [IsAdminUser]
+
